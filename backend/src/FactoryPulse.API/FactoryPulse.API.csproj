@@ -10,14 +10,17 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.OpenApi" />
   </ItemGroup>
-
+	
+  <ItemGroup>
+	<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
+  </ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\FactoryPulse.Application\FactoryPulse.Application.csproj" />
     <ProjectReference Include="..\FactoryPulse.Infrastructure\FactoryPulse.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Configuration\" />
     <Folder Include="Extensions\" />
     <Folder Include="Middleware\" />

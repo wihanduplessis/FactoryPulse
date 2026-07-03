@@ -1,0 +1,56 @@
+# Normalize line endings across Windows / Linux / macOS.
+# Git stores text as LF in the repo and converts on checkout as needed.
+* text=auto eol=lf
+
+##########################################
+# Explicit text files (LF in repo)
+##########################################
+*.cs        text diff=csharp
+*.csproj    text
+*.sln       text
+*.slnx      text
+*.props     text
+*.targets   text
+*.json      text
+*.jsonc     text
+*.xml       text
+*.yml       text
+*.yaml      text
+*.md        text
+*.txt       text
+*.html      text
+*.css       text
+*.scss      text
+*.js        text
+*.ts        text
+*.config    text
+*.editorconfig text
+Dockerfile  text
+.gitattributes text
+.gitignore  text
+
+##########################################
+# Files that MUST keep specific endings
+##########################################
+# Shell scripts must be LF or they break inside Linux containers.
+*.sh        text eol=lf
+# Windows batch / PowerShell scripts stay CRLF.
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+*.ps1       text eol=crlf
+
+##########################################
+# Binary files (never diff or convert)
+##########################################
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.dll       binary
+*.exe       binary
+*.pfx       binary
+*.snk       binary
