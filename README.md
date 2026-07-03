@@ -20,3 +20,23 @@ A cloud-native manufacturing analytics platform built with .NET and Azure.
 - Azure Storage
 - Docker
 - GitHub Actions
+
+## Features (Planned)
+
+- Machine Management
+- Production Orders
+- Dashboard & KPIs
+- JWT Authentication
+- Docker Support
+- Azure Deployment
+
+## Project Structure
+
+backend/
+frontend/
+docs/
+infrastructure/
+
+## Project Status
+
+🚧 Currently under active development.
