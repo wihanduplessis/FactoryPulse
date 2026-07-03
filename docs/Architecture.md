@@ -42,7 +42,7 @@ Repository
 DbContext
 
 ## Technology Stack
-.NET 9
+.NET 10
 ASP.NET Core Web API
 Entity Framework Core
 SQL Server
