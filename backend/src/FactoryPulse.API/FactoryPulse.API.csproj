@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>02dffd5a-0894-42c0-88cc-40deab4dde1d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,13 @@
   <ItemGroup>
 	<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\FactoryPulse.Application\FactoryPulse.Application.csproj" />
     <ProjectReference Include="..\FactoryPulse.Infrastructure\FactoryPulse.Infrastructure.csproj" />
