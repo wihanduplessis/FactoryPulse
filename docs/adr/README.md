@@ -1,0 +1,38 @@
+# Architecture Decision Records (ADRs)
+
+This folder records the **significant technical decisions** made on FactoryPulse —
+not just *what* was decided, but *why*, and what trade-offs were accepted.
+
+An ADR captures a decision at the point in time it was made. Records are
+**immutable**: once accepted, an ADR is not edited to reflect a later change of
+mind. Instead, a new ADR is added that supersedes the old one, and the old one's
+status is updated to `Superseded by ADR-XXXX`.
+
+## Why keep these?
+
+- They answer "why is it done this way?" for future-you and any collaborator.
+- They make the reasoning reviewable, the same way code is.
+- In an interview, "here's the ADR explaining that trade-off" beats "it seemed
+  like a good idea."
+
+## Format
+
+We use a lightweight [MADR](https://adr.github.io/madr/)-style template — see
+[`template.md`](template.md). Each record has a status, the context that forced a
+decision, the decision itself, the alternatives weighed, and the consequences
+(good and bad).
+
+## Index
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [0001](0001-use-docker-for-local-sql-server.md) | Use Docker for the local SQL Server environment | Accepted |
+| [0002](0002-use-guid-primary-keys.md) | Use GUID primary keys for entities | Accepted |
+| [0003](0003-store-enums-as-strings.md) | Store enum values as strings in the database | Accepted |
+| [0004](0004-use-repository-pattern.md) | Use the repository pattern for data access | Accepted |
+
+## Candidate future ADRs
+
+Decisions already made in the codebase that are worth recording as the project
+grows: Clean/layered architecture split, Central Package Management, choice of
+API documentation UI (Scalar/Swagger), and `.slnx` solution format.
