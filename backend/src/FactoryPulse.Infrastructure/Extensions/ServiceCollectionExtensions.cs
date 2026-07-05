@@ -1,4 +1,6 @@
+using FactoryPulse.Application.Interfaces;
 using FactoryPulse.Infrastructure.Persistence;
+using FactoryPulse.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,7 @@ public static class ServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("FactoryPulseDatabase");
 
         services.AddDbContext<FactoryPulseDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddScoped<IMachineRepository, MachineRepository>();
 
         return services;
     }
