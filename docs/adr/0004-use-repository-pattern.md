@@ -49,6 +49,15 @@ the interfaces, not on `DbContext` directly.
 
 ### Follow-ups
 
-- Implement `IMachineRepository` / `MachineRepository` in Issue #5.
+- Implement `IMachineRepository` / `MachineRepository`.
 - Introduce a Unit of Work / explicit `SaveChangesAsync` boundary if/when a
   single operation must span multiple repositories atomically.
+
+## Amendment (2026-07-04)
+
+Repositories return plain nullable entities (e.g. `Task<Machine?>`), **not**
+`Result<T>`. `Result<T>` encodes *business outcomes* and is an Application-layer
+concern (see [ADR-0006](0006-result-for-expected-outcomes.md)); a repository is
+infrastructure and must stay unaware of it. A repository returning `null` is a
+data fact; the *service* decides that `null` means `Errors.Machine.NotFound` and
+returns the corresponding `Result` failure.

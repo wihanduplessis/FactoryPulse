@@ -29,7 +29,10 @@ decision, the decision itself, the alternatives weighed, and the consequences
 | [0001](0001-use-docker-for-local-sql-server.md) | Use Docker for the local SQL Server environment | Accepted |
 | [0002](0002-use-guid-primary-keys.md) | Use GUID primary keys for entities | Accepted |
 | [0003](0003-store-enums-as-strings.md) | Store enum values as strings in the database | Accepted |
-| [0004](0004-use-repository-pattern.md) | Use the repository pattern for data access | Accepted |
+| [0004](0004-use-repository-pattern.md) | Use the repository pattern for data access | Accepted (amended) |
+| [0005](0005-services-return-dtos.md) | Services return DTOs, not domain entities | Accepted |
+| [0006](0006-result-for-expected-outcomes.md) | `Result<T>` for expected outcomes, exceptions for unexpected | Accepted |
+| [0007](0007-manual-mapping.md) | Use manual mapping in the Application layer | Accepted |
 
 ## Candidate future ADRs
 
