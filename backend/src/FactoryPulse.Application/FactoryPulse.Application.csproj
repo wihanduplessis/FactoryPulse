@@ -5,7 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\" />
     <Folder Include="DTOs\" />
     <Folder Include="Mappings\" />
     <Folder Include="Validators\" />
