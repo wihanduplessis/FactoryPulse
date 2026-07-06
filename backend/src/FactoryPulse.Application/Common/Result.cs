@@ -51,6 +51,18 @@ public class Result
     {
         return new Result<TValue>(default, false, errors);
     }
+
+    public TResult Match<TResult>(
+    Func<TResult> onSuccess,
+    Func<IReadOnlyList<Error>, TResult> onFailure)
+    {
+        if (IsSuccess)
+        {
+            return onSuccess();
+        }
+
+        return onFailure(Errors);
+    }
 }
 
 public class Result<TValue> : Result
