@@ -4,6 +4,7 @@ using FactoryPulse.Application.Interfaces;
 using FactoryPulse.Application.Mappings;
 using FactoryPulse.Domain.Enums;
 using FluentValidation;
+using Microsoft.Extensions.Logging;
 
 namespace FactoryPulse.Application.Services;
 
@@ -12,12 +13,14 @@ public class MachineService : IMachineService
     private readonly IMachineRepository _repository;
     private readonly IValidator<CreateMachineRequest> _createValidator;
     private readonly IValidator<UpdateMachineRequest> _updateValidator;
+    private readonly ILogger<MachineService> _logger;
 
-    public MachineService(IMachineRepository repository, IValidator<CreateMachineRequest> createValidator, IValidator<UpdateMachineRequest> updateValidator)
+    public MachineService(IMachineRepository repository, IValidator<CreateMachineRequest> createValidator, IValidator<UpdateMachineRequest> updateValidator, ILogger<MachineService> logger)
     {
         _repository = repository;
         _createValidator = createValidator;
         _updateValidator = updateValidator;
+        _logger = logger;
     }
 
     private static IReadOnlyList<Error> ToValidationErrors(FluentValidation.Results.ValidationResult validationResult)
@@ -60,6 +63,7 @@ public class MachineService : IMachineService
         await _repository.AddAsync(machine, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("Created machine {MachineId} ({MachineName})", machine.Id, machine.Name);
         return machine.ToDto();
     }
 
@@ -91,6 +95,7 @@ public class MachineService : IMachineService
         _repository.Update(machine);
         await _repository.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("Updated machine {MachineId}", machine.Id);
         return machine.ToDto();
     }
 
@@ -106,6 +111,7 @@ public class MachineService : IMachineService
         _repository.Remove(machine);
         await _repository.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("Deleted machine {MachineId}", id);
         return Result.Success();
     }
 }

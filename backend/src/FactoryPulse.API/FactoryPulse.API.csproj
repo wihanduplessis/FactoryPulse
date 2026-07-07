@@ -11,7 +11,12 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.OpenApi" />
   </ItemGroup>
-	
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
   <ItemGroup>
 	<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>
