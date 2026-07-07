@@ -3,16 +3,26 @@ using FactoryPulse.Application.DTOs;
 using FactoryPulse.Application.Interfaces;
 using FactoryPulse.Application.Mappings;
 using FactoryPulse.Domain.Enums;
+using FluentValidation;
 
 namespace FactoryPulse.Application.Services;
 
 public class MachineService : IMachineService
 {
     private readonly IMachineRepository _repository;
+    private readonly IValidator<CreateMachineRequest> _createValidator;
+    private readonly IValidator<UpdateMachineRequest> _updateValidator;
 
-    public MachineService(IMachineRepository repository)
+    public MachineService(IMachineRepository repository, IValidator<CreateMachineRequest> createValidator, IValidator<UpdateMachineRequest> updateValidator)
     {
         _repository = repository;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
+    }
+
+    private static IReadOnlyList<Error> ToValidationErrors(FluentValidation.Results.ValidationResult validationResult)
+    {
+        return validationResult.Errors.Select(failure => Error.Validation(failure.PropertyName,failure.ErrorMessage)).ToList();
     }
 
     public async Task<Result<MachineDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -36,6 +46,13 @@ public class MachineService : IMachineService
 
     public async Task<Result<MachineDto>> CreateAsync(CreateMachineRequest request, CancellationToken cancellationToken = default)
     {
+        var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return Result.Failure<MachineDto>(ToValidationErrors(validationResult));
+        }
+
+
         var machine = request.ToEntity();
         machine.CreatedAt = DateTime.UtcNow;
         machine.UpdatedAt = DateTime.UtcNow;
@@ -48,6 +65,12 @@ public class MachineService : IMachineService
 
     public async Task<Result<MachineDto>> UpdateAsync(Guid id, UpdateMachineRequest request, CancellationToken cancellationToken = default)
     {
+        var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return Result.Failure<MachineDto>(ToValidationErrors(validationResult));
+        }
+
         var machine = await _repository.GetByIdAsync(id, cancellationToken);
 
         if (machine is null)
