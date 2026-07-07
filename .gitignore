@@ -428,5 +428,8 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
+# Serilog output
+logs/
+
 # Claude Code
 CLAUDE.md

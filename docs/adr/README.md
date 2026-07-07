@@ -33,6 +33,7 @@ decision, the decision itself, the alternatives weighed, and the consequences
 | [0005](0005-services-return-dtos.md) | Services return DTOs, not domain entities | Accepted |
 | [0006](0006-result-for-expected-outcomes.md) | `Result<T>` for expected outcomes, exceptions for unexpected | Accepted |
 | [0007](0007-manual-mapping.md) | Use manual mapping in the Application layer | Accepted |
+| [0008](0008-logging-strategy.md) | Structured logging (Serilog) with a layer-based strategy | Accepted |
 
 ## Candidate future ADRs
 
