@@ -2,12 +2,17 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 using FactoryPulse.Infrastructure.Extensions;
 using FactoryPulse.Application.Extensions;
 using FactoryPulse.API.Middleware;
+using System.Text.Json.Serialization;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

@@ -23,11 +23,6 @@ public class MachineService : IMachineService
         _logger = logger;
     }
 
-    private static IReadOnlyList<Error> ToValidationErrors(FluentValidation.Results.ValidationResult validationResult)
-    {
-        return validationResult.Errors.Select(failure => Error.Validation(failure.PropertyName,failure.ErrorMessage)).ToList();
-    }
-
     public async Task<Result<MachineDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var machine = await _repository.GetByIdAsync(id, cancellationToken);
@@ -52,7 +47,7 @@ public class MachineService : IMachineService
         var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return Result.Failure<MachineDto>(ToValidationErrors(validationResult));
+            return Result.Failure<MachineDto>(validationResult.ToErrors());
         }
 
         var machine = request.ToEntity();
@@ -69,7 +64,7 @@ public class MachineService : IMachineService
         var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return Result.Failure<MachineDto>(ToValidationErrors(validationResult));
+            return Result.Failure<MachineDto>(validationResult.ToErrors());
         }
 
         var machine = await _repository.GetByIdAsync(id, cancellationToken);

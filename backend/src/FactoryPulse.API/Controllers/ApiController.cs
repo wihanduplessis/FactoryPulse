@@ -8,9 +8,20 @@ public abstract class ApiController : ControllerBase
 {
     protected IActionResult HandleFailure(IReadOnlyList<Error> errors)
     {
-        Error error = errors[0];
+        Error primaryError = errors[0];
 
-        int statusCode = error.Type switch
+        if (primaryError.Type == ErrorType.Validation)
+        {
+            var errorDictionary = errors
+                .GroupBy(error => error.Code)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(error => error.Description).ToArray());
+
+            return ValidationProblem(new ValidationProblemDetails(errorDictionary));
+        }
+
+        int statusCode = primaryError.Type switch
         {
             ErrorType.NotFound => StatusCodes.Status404NotFound,
             ErrorType.Validation => StatusCodes.Status400BadRequest,
@@ -18,6 +29,6 @@ public abstract class ApiController : ControllerBase
             _ => StatusCodes.Status500InternalServerError,
         };
 
-        return Problem(statusCode:  statusCode, title: error.Code, detail: error.Description);
+        return Problem(statusCode:  statusCode, title: primaryError.Code, detail: primaryError.Description);
     }
 }
