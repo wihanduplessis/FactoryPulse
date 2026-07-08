@@ -34,6 +34,7 @@ decision, the decision itself, the alternatives weighed, and the consequences
 | [0006](0006-result-for-expected-outcomes.md) | `Result<T>` for expected outcomes, exceptions for unexpected | Accepted |
 | [0007](0007-manual-mapping.md) | Use manual mapping in the Application layer | Accepted |
 | [0008](0008-logging-strategy.md) | Structured logging (Serilog) with a layer-based strategy | Accepted |
+| [0009](0009-rich-domain-model-for-aggregates.md) | Rich domain model for aggregates with a lifecycle | Accepted |
 
 ## Candidate future ADRs
 
