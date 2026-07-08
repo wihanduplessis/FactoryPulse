@@ -35,6 +35,7 @@ decision, the decision itself, the alternatives weighed, and the consequences
 | [0007](0007-manual-mapping.md) | Use manual mapping in the Application layer | Accepted |
 | [0008](0008-logging-strategy.md) | Structured logging (Serilog) with a layer-based strategy | Accepted |
 | [0009](0009-rich-domain-model-for-aggregates.md) | Rich domain model for aggregates with a lifecycle | Accepted |
+| [0010](0010-testing-strategy.md) | Testing strategy and library choices | Accepted |
 
 ## Candidate future ADRs
 

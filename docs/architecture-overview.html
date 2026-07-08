@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FactoryPulse — Architecture Overview</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm; }
+  :root {
+    --domain: #2e7d32; --domain-bg: #e8f5e9;
+    --app: #1565c0; --app-bg: #e3f2fd;
+    --infra: #e65100; --infra-bg: #fff3e0;
+    --api: #6a1b9a; --api-bg: #f3e5f5;
+    --ink: #1a1a1a; --muted: #555; --line: #d0d0d0; --code-bg: #f5f5f5;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: var(--ink); font-size: 11.5px; line-height: 1.5; margin: 0; }
+  h1 { font-size: 30px; margin: 0 0 4px; letter-spacing: -0.5px; }
+  h2 { font-size: 18px; margin: 26px 0 10px; padding-bottom: 5px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 13.5px; margin: 16px 0 6px; }
+  p { margin: 6px 0; }
+  code { font-family: "Cascadia Code","Consolas",monospace; background: var(--code-bg); padding: 1px 4px; border-radius: 3px; font-size: 10.5px; }
+  .muted { color: var(--muted); }
+  .section { page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
+  .cover { padding: 40px 0 20px; border-bottom: 3px solid var(--ink); margin-bottom: 8px; }
+  .cover .sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .cover .meta { font-size: 11px; color: var(--muted); margin-top: 16px; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 10px; font-weight: 600; margin-right: 6px; }
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 4px; }
+  .legend .item { display: flex; align-items: center; gap: 5px; font-size: 10.5px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .stack { margin: 12px auto; max-width: 560px; }
+  .layer { border: 1.5px solid; border-radius: 8px; padding: 10px 14px; margin: 0 auto; page-break-inside: avoid; }
+  .layer .lname { font-weight: 700; font-size: 13px; }
+  .layer .lrole { font-size: 10px; color: var(--muted); }
+  .layer .litems { font-size: 10px; margin-top: 4px; font-family: "Cascadia Code","Consolas",monospace; }
+  .l-api { border-color: var(--api); background: var(--api-bg); }
+  .l-app { border-color: var(--app); background: var(--app-bg); }
+  .l-infra { border-color: var(--infra); background: var(--infra-bg); }
+  .l-domain { border-color: var(--domain); background: var(--domain-bg); }
+  .arrow { text-align: center; color: var(--muted); font-size: 15px; line-height: 1.1; margin: 2px 0; }
+  .arrow small { font-size: 9px; display:block; margin-top:-3px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10.5px; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #fafafa; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  td code { font-size: 10px; }
+  .layerhead { font-weight: 700; font-size: 14px; padding: 5px 10px; border-radius: 6px; display: inline-block; margin-top: 6px; }
+  .h-api { background: var(--api-bg); color: var(--api); border:1px solid var(--api); }
+  .h-app { background: var(--app-bg); color: var(--app); border:1px solid var(--app); }
+  .h-infra { background: var(--infra-bg); color: var(--infra); border:1px solid var(--infra); }
+  .h-domain { background: var(--domain-bg); color: var(--domain); border:1px solid var(--domain); }
+  .flow { margin: 8px 0; }
+  .step { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-bottom: 1px dashed var(--line); page-break-inside: avoid; }
+  .step:last-child { border-bottom: none; }
+  .step .n { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .step .body { flex: 1; }
+  .step .where { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+  .w-api { color: var(--api); } .w-app { color: var(--app); } .w-infra { color: var(--infra); } .w-domain { color: var(--domain); } .w-db { color: #444; }
+  .note { background: #fffbe6; border-left: 3px solid #f0c000; padding: 8px 12px; margin: 10px 0; font-size: 10.5px; border-radius: 0 6px 6px 0; }
+  .callout { background: #f0f7ff; border-left: 3px solid var(--app); padding: 8px 12px; margin: 10px 0; font-size: 10.5px; border-radius: 0 6px 6px 0; }
+  ul { margin: 6px 0; padding-left: 18px; } li { margin: 3px 0; }
+  .sm { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-family: "Cascadia Code","Consolas",monospace; font-size: 11px; margin: 8px 0; }
+  .sbox { border: 1.5px solid var(--domain); background: var(--domain-bg); border-radius: 6px; padding: 4px 10px; font-weight: 600; }
+  .sterm { border-style: dashed; opacity: .85; }
+  .sarr { color: var(--muted); }
+  .footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 9.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>FactoryPulse</h1>
+  <div class="sub">Backend Architecture Overview &mdash; Machine Management &amp; Production Orders (v0.3)</div>
+  <div>
+    <span class="pill" style="background:var(--api-bg);color:var(--api)">Clean Architecture</span>
+    <span class="pill" style="background:var(--app-bg);color:var(--app)">.NET 10</span>
+    <span class="pill" style="background:var(--domain-bg);color:var(--domain)">Rich Domain Model</span>
+    <span class="pill" style="background:var(--infra-bg);color:var(--infra)">EF Core + SQL (Docker)</span>
+  </div>
+  <div class="meta">Modular monolith &bull; dependencies point inward &bull; Controller → Service → Repository → EF Core → SQL Server</div>
+</div>
+
+<div class="section">
+<h2>1. The big idea</h2>
+<p>FactoryPulse uses <strong>Clean Architecture</strong>: a layered design where <strong>all dependencies point inward</strong> toward a pure, framework-free domain. The solution is split into <strong>four projects</strong>, one per layer, so the boundaries are enforced at compile time — the Domain project literally cannot reference EF Core.</p>
+
+<div class="legend">
+  <span class="item"><span class="swatch" style="background:var(--api)"></span> API (HTTP)</span>
+  <span class="item"><span class="swatch" style="background:var(--app)"></span> Application (business logic)</span>
+  <span class="item"><span class="swatch" style="background:var(--infra)"></span> Infrastructure (data access)</span>
+  <span class="item"><span class="swatch" style="background:var(--domain)"></span> Domain (pure core)</span>
+</div>
+
+<div class="stack">
+  <div class="layer l-api"><span class="lname">FactoryPulse.API</span> &mdash; <span class="lrole">presentation / HTTP</span>
+    <div class="litems">Program.cs &bull; MachinesController &bull; ProductionOrdersController &bull; ApiController &bull; GlobalExceptionHandler</div></div>
+  <div class="arrow">▼ <small>depends on</small></div>
+  <div class="layer l-app"><span class="lname">FactoryPulse.Application</span> &mdash; <span class="lrole">business logic &amp; contracts</span>
+    <div class="litems">Machine/ProductionOrder services &bull; interfaces &bull; DTOs &bull; Result / Error &bull; validators &bull; mapping &bull; PagedResult</div></div>
+  <div class="arrow">▼ <small>depends on</small></div>
+  <div class="layer l-domain"><span class="lname">FactoryPulse.Domain</span> &mdash; <span class="lrole">pure core (no dependencies)</span>
+    <div class="litems">Machine &bull; ProductionOrder (rich) &bull; enums &bull; exceptions &bull; IAuditableEntity</div></div>
+  <div class="arrow" style="margin-top:8px">▲ <small>Infrastructure depends inward on Domain &amp; Application</small></div>
+  <div class="layer l-infra"><span class="lname">FactoryPulse.Infrastructure</span> &mdash; <span class="lrole">data access (EF Core)</span>
+    <div class="litems">FactoryPulseDbContext &bull; repositories &bull; configurations &bull; SaveChanges audit</div></div>
+  <div class="arrow">▼ <small>reads / writes</small></div>
+  <div class="layer" style="border:1.5px solid #444;background:#f2f2f2"><span class="lname">SQL Server 2022 (Docker)</span> &mdash; <span class="lrole">FactoryPulseDb</span></div>
+</div>
+
+<div class="callout"><strong>Reference rule:</strong> API → Application + Infrastructure &nbsp;•&nbsp; Application → Domain &nbsp;•&nbsp; Infrastructure → Domain + Application &nbsp;•&nbsp; <strong>Domain → nothing</strong>.</div>
+</div>
+
+<div class="section page-break">
+<h2>2. What lives in each layer</h2>
+
+<div class="layerhead h-domain">Domain &mdash; what the business <em>is</em></div>
+<table>
+  <tr><th>Element</th><th>Kind</th><th>Purpose</th></tr>
+  <tr><td><code>Machine</code></td><td>Entity (anemic)</td><td>Factory machine. <code>Id</code>, <code>Name</code>, <code>Description?</code>, <code>Status</code>, audit fields.</td></tr>
+  <tr><td><code>ProductionOrder</code></td><td>Entity (rich)</td><td>Order with a lifecycle. Private setters; created via <code>Create(...)</code>; state changed only via <code>Start/Complete/Cancel</code>. FK to <code>Machine</code>.</td></tr>
+  <tr><td><code>MachineStatus</code> / <code>ProductionOrderStatus</code></td><td>Enums</td><td>Fixed state sets, stored as strings.</td></tr>
+  <tr><td><code>InvalidProductionOrderTransitionException</code></td><td>Exception</td><td>Thrown by the entity if an illegal transition is attempted (invariant backstop).</td></tr>
+  <tr><td><code>IAuditableEntity</code></td><td>Interface</td><td>Marks entities with <code>CreatedAt</code>/<code>UpdatedAt</code> so the DbContext can set them automatically.</td></tr>
+</table>
+
+<div class="layerhead h-app">Application &mdash; business logic &amp; contracts</div>
+<table>
+  <tr><th>Element</th><th>Kind</th><th>Purpose</th></tr>
+  <tr><td><code>IMachineService</code> / <code>IProductionOrderService</code></td><td>Interfaces</td><td>Application-facing contracts. All operations return <code>Result&lt;…&gt;</code>.</td></tr>
+  <tr><td><code>MachineService</code> / <code>ProductionOrderService</code></td><td>Services</td><td>Business logic. Depend on repositories + validators. Map entities↔DTOs; enforce cross-aggregate &amp; uniqueness rules; drive the rich model's transitions.</td></tr>
+  <tr><td><code>IMachineRepository</code> / <code>IProductionOrderRepository</code></td><td>Interfaces</td><td>Data-access contracts owned by the business layer (ports).</td></tr>
+  <tr><td>DTOs</td><td>Records/POCOs</td><td>Separate request/response shapes (<code>MachineDto</code>, <code>CreateProductionOrderRequest</code>, …). Status exposed as strings.</td></tr>
+  <tr><td>Validators</td><td>FluentValidation</td><td>Input-shape rules (required, lengths, quantity &gt; 0).</td></tr>
+  <tr><td><code>Result</code> / <code>Result&lt;T&gt;</code>, <code>Error</code>, <code>ErrorType</code>, <code>Errors</code></td><td>Common</td><td>Outcome container with categories &amp; a central error catalog.</td></tr>
+  <tr><td><code>PagedResult&lt;T&gt;</code>, <code>ProductionOrderQueryParameters</code></td><td>Common</td><td>Pagination (self-clamping page size) and filtering.</td></tr>
+</table>
+
+<div class="layerhead h-infra">Infrastructure &mdash; <em>how</em> data is stored</div>
+<table>
+  <tr><th>Element</th><th>Kind</th><th>Purpose</th></tr>
+  <tr><td><code>FactoryPulseDbContext</code></td><td>DbContext</td><td><code>DbSet</code>s for Machine &amp; ProductionOrder. Overrides <code>SaveChangesAsync</code> to set audit fields for any <code>IAuditableEntity</code>.</td></tr>
+  <tr><td><code>MachineConfiguration</code> / <code>ProductionOrderConfiguration</code></td><td>EF config</td><td>Fluent mapping: lengths, string enums, the FK relationship, the unique index on <code>OrderNumber</code>.</td></tr>
+  <tr><td><code>MachineRepository</code> / <code>ProductionOrderRepository</code></td><td>Repositories</td><td>EF Core queries. Paging/filtering, eager-loading (<code>Include</code>), uniqueness checks; stage-then-save.</td></tr>
+</table>
+
+<div class="layerhead h-api">API &mdash; <em>how</em> it is exposed</div>
+<table>
+  <tr><th>Element</th><th>Kind</th><th>Purpose</th></tr>
+  <tr><td><code>ApiController</code></td><td>Base controller</td><td><code>HandleFailure</code> maps <code>ErrorType</code> → HTTP status; returns all validation errors as <code>ValidationProblemDetails</code>.</td></tr>
+  <tr><td><code>MachinesController</code> / <code>ProductionOrdersController</code></td><td>Controllers</td><td>Thin: call service → <code>Result.Match(...)</code> → HTTP. Orders add transition sub-resources and pagination/filtering.</td></tr>
+  <tr><td><code>GlobalExceptionHandler</code></td><td>Middleware</td><td>Catches unexpected exceptions → logs → 500 ProblemDetails.</td></tr>
+</table>
+</div>
+
+<div class="section page-break">
+<h2>3. Outcomes: the Result pattern</h2>
+<p>Every service method returns a <strong>Result</strong> — "succeeded (here's the value)" or "failed (here are the errors)". Unexpected failures still throw and are handled by middleware. <code>Error</code> carries a category so the controller picks the right status:</p>
+<table style="max-width:360px">
+  <tr><th>ErrorType</th><th>HTTP</th></tr>
+  <tr><td><code>NotFound</code></td><td>404</td></tr>
+  <tr><td><code>Validation</code></td><td>400 (all errors listed)</td></tr>
+  <tr><td><code>Conflict</code></td><td>409</td></tr>
+  <tr><td><code>Failure</code></td><td>500</td></tr>
+</table>
+
+<h2>4. Production Orders — relationship &amp; lifecycle</h2>
+<p>A <code>Machine</code> has many <code>ProductionOrder</code>s; each order belongs to one machine (FK <code>MachineId</code>, <code>OnDelete: Restrict</code> — a machine with orders cannot be deleted).</p>
+
+<h3>The state machine (rich domain model)</h3>
+<p>The order's <code>Status</code> can only change through behaviour methods, each guarded by a <code>Can*</code> rule. Illegal transitions are impossible from the API and throw inside the entity as a backstop.</p>
+<div class="sm">
+  <span class="sbox">Planned</span>
+  <span class="sarr">&mdash;Start()&rarr;</span>
+  <span class="sbox">Running</span>
+  <span class="sarr">&mdash;Complete()&rarr;</span>
+  <span class="sbox sterm">Completed</span>
+</div>
+<div class="sm">
+  <span class="muted">Planned / Running</span>
+  <span class="sarr">&mdash;Cancel()&rarr;</span>
+  <span class="sbox sterm">Cancelled</span>
+  <span class="muted">(terminal — cannot be restarted)</span>
+</div>
+
+<h3>Business rules — where each lives</h3>
+<table>
+  <tr><th>Rule</th><th>Layer</th><th>Result</th></tr>
+  <tr><td>Quantity &gt; 0</td><td>Validator</td><td>400</td></tr>
+  <tr><td>Completed order needs a valid end date</td><td>Service + Domain</td><td>400</td></tr>
+  <tr><td>Order number unique</td><td>Service + DB unique index</td><td>409</td></tr>
+  <tr><td>No order on a retired machine</td><td>Service (loads the Machine)</td><td>400 / 409</td></tr>
+  <tr><td>Cancelled order can't be restarted</td><td>Domain (<code>CanStart</code>)</td><td>409</td></tr>
+</table>
+<div class="note"><strong>Placement principle:</strong> input-shape rules → <strong>validator</strong>; rules needing other data → <strong>service</strong>; rules about an entity's own lifecycle → the <strong>entity</strong>.</div>
+</div>
+
+<div class="section page-break">
+<h2>5. Request flow — <code>POST /api/orders</code></h2>
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="body"><span class="where w-api">API · ProductionOrdersController.Create</span><br>Binds the body to <code>CreateProductionOrderRequest</code>, calls the service.</div></div>
+  <div class="step"><div class="n">2</div><div class="body"><span class="where w-app">Application · validate &amp; check rules</span><br>Validator (quantity, lengths). Then service loads the <code>Machine</code> (must exist, not retired) and checks order-number uniqueness.</div></div>
+  <div class="step"><div class="n">3</div><div class="body"><span class="where w-app">Application · build via factory</span><br><code>ProductionOrder.Create(...)</code> → a valid order in <code>Planned</code>.</div></div>
+  <div class="step"><div class="n">4</div><div class="body"><span class="where w-infra">Infrastructure · repository + DbContext</span><br><code>AddAsync</code> stages; <code>SaveChangesAsync</code> commits — and sets audit fields for the new order.</div></div>
+  <div class="step"><div class="n">5</div><div class="body"><span class="where w-db">EF Core → SQL Server</span><br>Sequential GUID key generated; <code>INSERT</code> in one transaction; unique index enforces order-number uniqueness.</div></div>
+  <div class="step"><div class="n">6</div><div class="body"><span class="where w-api">API · translate to HTTP</span><br><code>result.Match(...)</code> → <strong>201 Created</strong> with a <code>Location</code> header, or 400/409 for a rule failure.</div></div>
+</div>
+
+<h2>6. Dependency injection (per request, Scoped)</h2>
+<table>
+  <tr><th>Needs</th><th>Gets</th><th>Registered in</th></tr>
+  <tr><td><code>IProductionOrderService</code></td><td><code>ProductionOrderService</code></td><td><code>AddApplication()</code></td></tr>
+  <tr><td><code>IProductionOrderRepository</code></td><td><code>ProductionOrderRepository</code></td><td><code>AddInfrastructure()</code></td></tr>
+  <tr><td>validators</td><td>auto-registered from the assembly</td><td><code>AddApplication()</code></td></tr>
+  <tr><td><code>FactoryPulseDbContext</code></td><td>SQL Server context</td><td><code>AddInfrastructure()</code></td></tr>
+</table>
+<div class="callout">A controller asks for a service; DI builds it with its repositories, validators, and the <code>DbContext</code> — the whole chain, all sharing one scope (one unit of work) per request.</div>
+
+<h2>7. Quality &amp; cross-cutting</h2>
+<ul>
+  <li><strong>Testing:</strong> xUnit + NSubstitute + Shouldly. Unit tests cover the <code>ProductionOrder</code> state machine, the <code>Result</code> pattern, and service business rules (repositories mocked).</li>
+  <li><strong>Logging:</strong> Serilog to console + rolling file. Controllers silent; services log business events; middleware logs exceptions.</li>
+  <li><strong>Audit fields:</strong> <code>CreatedAt</code>/<code>UpdatedAt</code> set centrally in <code>SaveChanges</code> via <code>IAuditableEntity</code>.</li>
+  <li><strong>Persistence:</strong> SQL Server 2022 in Docker; EF Core migrations; <code>Status</code> stored as text; secrets via <code>.env</code> + user-secrets.</li>
+</ul>
+</div>
+
+<div class="footer">
+  FactoryPulse &mdash; Architecture Overview (v0.3: Machine Management &amp; Production Orders). Generated from the current codebase. Decisions recorded as ADRs in <code>docs/adr/</code>.
+</div>
+
+</body>
+</html>
