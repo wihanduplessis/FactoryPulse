@@ -55,10 +55,7 @@ public class MachineService : IMachineService
             return Result.Failure<MachineDto>(ToValidationErrors(validationResult));
         }
 
-
         var machine = request.ToEntity();
-        machine.CreatedAt = DateTime.UtcNow;
-        machine.UpdatedAt = DateTime.UtcNow;
 
         await _repository.AddAsync(machine, cancellationToken);
         await _repository.SaveChangesAsync(cancellationToken);
@@ -90,7 +87,6 @@ public class MachineService : IMachineService
         machine.Name = request.Name;
         machine.Description = request.Description;
         machine.Status = status;
-        machine.UpdatedAt = DateTime.UtcNow;
 
         _repository.Update(machine);
         await _repository.SaveChangesAsync(cancellationToken);

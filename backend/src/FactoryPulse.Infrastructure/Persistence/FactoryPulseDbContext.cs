@@ -1,4 +1,5 @@
 using System.Reflection;
+using FactoryPulse.Domain.Common;
 using FactoryPulse.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,5 +19,29 @@ public class FactoryPulseDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        ApplyAuditInformation();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void ApplyAuditInformation()
+    {
+        var now = DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<IAuditableEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Property(entity => entity.CreatedAt).CurrentValue = now;
+                entry.Property(entity => entity.UpdatedAt).CurrentValue = now;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Property(entity => entity.UpdatedAt).CurrentValue = now;
+            }
+        }
     }
 }
