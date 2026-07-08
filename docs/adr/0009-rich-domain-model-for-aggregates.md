@@ -79,3 +79,14 @@ applied only where a real lifecycle justifies it.
 - Apply the same pattern to future lifecycle aggregates.
 - Consider extracting a small shared base (`Entity`) if several aggregates share
   identity/audit plumbing.
+
+## Amendment (2026-07-08)
+
+Audit timestamps are no longer set by the entity. They are centralized in the
+`DbContext`: entities implement the `IAuditableEntity` marker interface, and an
+override of `SaveChangesAsync` sets `CreatedAt`/`UpdatedAt` automatically
+(`CreatedAt` + `UpdatedAt` on insert, `UpdatedAt` on update). This supersedes the
+original decision that the entity manages its own timestamps, and unifies the
+approach across the anemic `Machine` and the rich `ProductionOrder` (EF writes
+the private setters via its metadata, so encapsulation is preserved). The entity
+factory and behaviour methods no longer touch `CreatedAt`/`UpdatedAt`.

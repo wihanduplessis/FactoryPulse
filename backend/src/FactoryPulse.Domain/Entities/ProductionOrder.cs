@@ -1,9 +1,10 @@
+using FactoryPulse.Domain.Common;
 using FactoryPulse.Domain.Enums;
 using FactoryPulse.Domain.Exceptions;
 
 namespace FactoryPulse.Domain.Entities;
 
-public class ProductionOrder
+public class ProductionOrder : IAuditableEntity
 {
     private ProductionOrder()
     {
@@ -38,8 +39,6 @@ public class ProductionOrder
 
     public static ProductionOrder Create(string orderNumber, string productName, int quantity, DateTime startDate, Guid machineId)
     {
-        var now = DateTime.UtcNow;
-
         return new ProductionOrder
         {
             OrderNumber = orderNumber,
@@ -47,9 +46,7 @@ public class ProductionOrder
             Quantity = quantity,
             StartDate = startDate,
             Status = ProductionOrderStatus.Planned,
-            MachineId = machineId,
-            CreatedAt = now,
-            UpdatedAt = now
+            MachineId = machineId
         };
     }
 
@@ -62,7 +59,6 @@ public class ProductionOrder
 
         ProductName = productName;
         Quantity = quantity;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Start()
@@ -73,7 +69,6 @@ public class ProductionOrder
         }
 
         Status = ProductionOrderStatus.Running;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Complete(DateTime endDate)
@@ -85,7 +80,6 @@ public class ProductionOrder
 
         Status = ProductionOrderStatus.Completed;
         EndDate = endDate;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Cancel()
@@ -96,6 +90,5 @@ public class ProductionOrder
         }
 
         Status = ProductionOrderStatus.Cancelled;
-        UpdatedAt = DateTime.UtcNow;
     }
 }

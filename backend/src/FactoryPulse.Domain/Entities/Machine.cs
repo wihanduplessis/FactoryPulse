@@ -1,8 +1,9 @@
+using FactoryPulse.Domain.Common;
 using FactoryPulse.Domain.Enums;
 
 namespace FactoryPulse.Domain.Entities;
 
-public class Machine
+public class Machine : IAuditableEntity
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
