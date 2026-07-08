@@ -12,6 +12,7 @@ public class FactoryPulseDbContext : DbContext
     }
 
     public DbSet<Machine> Machines => Set<Machine>();
+    public DbSet<ProductionOrder> ProductionOrders => Set<ProductionOrder>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
