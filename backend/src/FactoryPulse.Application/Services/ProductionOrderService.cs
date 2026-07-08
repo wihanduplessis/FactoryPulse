@@ -26,11 +26,6 @@ public class ProductionOrderService : IProductionOrderService
         _logger = logger;
     }
 
-    private static IReadOnlyList<Error> ToValidationErrors(FluentValidation.Results.ValidationResult validationResult)
-    {
-        return validationResult.Errors.Select(failure => Error.Validation(failure.PropertyName, failure.ErrorMessage)).ToList();
-    }
-
     public async Task<Result<ProductionOrderDto>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var order = await _repository.GetByIdAsync(id, cancellationToken);
@@ -55,7 +50,7 @@ public class ProductionOrderService : IProductionOrderService
         var validationResult = await _createValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return Result.Failure<ProductionOrderDto>(ToValidationErrors(validationResult));
+            return Result.Failure<ProductionOrderDto>(validationResult.ToErrors());
         }
 
         var machine = await _machineRepository.GetByIdAsync(request.MachineId, cancellationToken);
@@ -90,7 +85,7 @@ public class ProductionOrderService : IProductionOrderService
         var validationResult = await _updateValidator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return Result.Failure<ProductionOrderDto>(ToValidationErrors(validationResult));
+            return Result.Failure<ProductionOrderDto>(validationResult.ToErrors());
         }
 
         var order = await _repository.GetByIdAsync(id, cancellationToken);
