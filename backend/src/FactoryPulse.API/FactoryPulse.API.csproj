@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FactoryPulse.Application\FactoryPulse.Application.csproj" />
     <ProjectReference Include="..\FactoryPulse.Infrastructure\FactoryPulse.Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,12 +1,16 @@
-using Swashbuckle.AspNetCore.SwaggerUI;
-using FactoryPulse.Infrastructure.Extensions;
-using FactoryPulse.Application.Extensions;
-using FactoryPulse.API.Middleware;
+using System.Text;
 using System.Text.Json.Serialization;
+using FactoryPulse.API.Middleware;
+using FactoryPulse.Application.Extensions;
+using FactoryPulse.Infrastructure.Extensions;
 using FactoryPulse.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 var builder = WebApplication.CreateBuilder(args);
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 
 builder.Services.AddOpenApi();
 builder.Services.AddControllers()
@@ -24,7 +28,29 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
     .ReadFrom.Services(services)
     .Enrich.FromLogContext());
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+        };
+    });
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<FactoryPulse.Infrastructure.Identity.IdentitySeeder>();
+    await seeder.SeedAsync();
+}
+
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
@@ -38,5 +64,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.Run();

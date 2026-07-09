@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<FactoryPulseDbContext>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IdentitySeeder>();
 
         return services;
     }
