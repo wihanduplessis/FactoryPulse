@@ -2,6 +2,7 @@ using FactoryPulse.Application.Common;
 using FactoryPulse.Application.DTOs;
 using FactoryPulse.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FactoryPulse.API.Controllers;
 
@@ -29,6 +30,7 @@ public class ProductionOrdersController : ApiController
         return result.Match(order => Ok(order), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPost]
     public async Task<IActionResult> Create(CreateProductionOrderRequest request, CancellationToken cancellationToken)
     {
@@ -38,6 +40,7 @@ public class ProductionOrdersController : ApiController
             HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateProductionOrderRequest request, CancellationToken cancellationToken)
     {
@@ -45,6 +48,7 @@ public class ProductionOrdersController : ApiController
         return result.Match(order => Ok(order), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPost("{id:guid}/start")]
     public async Task<IActionResult> Start(Guid id, CancellationToken cancellationToken)
     {
@@ -52,6 +56,7 @@ public class ProductionOrdersController : ApiController
         return result.Match(order => Ok(order), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPost("{id:guid}/complete")]
     public async Task<IActionResult> Complete(Guid id, CompleteProductionOrderRequest request, CancellationToken cancellationToken)
     {
@@ -59,6 +64,7 @@ public class ProductionOrdersController : ApiController
         return result.Match(order => Ok(order), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPost("{id:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
@@ -66,6 +72,7 @@ public class ProductionOrdersController : ApiController
         return result.Match(order => Ok(order), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

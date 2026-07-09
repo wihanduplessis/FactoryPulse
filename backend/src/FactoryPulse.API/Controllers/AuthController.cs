@@ -23,7 +23,7 @@ public class AuthController : ApiController
         return result.Match(response => Ok(response), HandleFailure);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken cancellationToken)
     {
