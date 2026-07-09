@@ -12,7 +12,10 @@ using Swashbuckle.AspNetCore.SwaggerUI;
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<FactoryPulse.API.OpenApi.BearerSecuritySchemeTransformer>();
+});
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
