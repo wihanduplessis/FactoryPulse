@@ -1,5 +1,6 @@
 using FactoryPulse.Application.DTOs;
 using FactoryPulse.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FactoryPulse.API.Controllers;
@@ -28,6 +29,7 @@ public class MachinesController : ApiController
         return result.Match(machine => Ok(machine), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPost]
     public async Task<IActionResult> Create(CreateMachineRequest request, CancellationToken cancellationToken)
     {
@@ -37,6 +39,7 @@ public class MachinesController : ApiController
             HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateMachineRequest request, CancellationToken cancellationToken)
     {
@@ -44,6 +47,7 @@ public class MachinesController : ApiController
         return result.Match(machine => Ok(machine), HandleFailure);
     }
 
+    [Authorize(Policy = "CanWrite")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

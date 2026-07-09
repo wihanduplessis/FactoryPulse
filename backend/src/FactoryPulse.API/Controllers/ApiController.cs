@@ -1,9 +1,11 @@
 using FactoryPulse.Application.Common;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FactoryPulse.API.Controllers;
 
 [ApiController]
+[Authorize]
 public abstract class ApiController : ControllerBase
 {
     protected IActionResult HandleFailure(IReadOnlyList<Error> errors)
