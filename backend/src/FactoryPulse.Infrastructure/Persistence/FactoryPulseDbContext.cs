@@ -2,10 +2,12 @@ using System.Reflection;
 using FactoryPulse.Domain.Common;
 using FactoryPulse.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using FactoryPulse.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace FactoryPulse.Infrastructure.Persistence;
 
-public class FactoryPulseDbContext : DbContext
+public class FactoryPulseDbContext : IdentityDbContext<ApplicationUser>
 {
     public FactoryPulseDbContext(DbContextOptions<FactoryPulseDbContext> options)
         : base(options)
