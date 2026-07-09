@@ -1,10 +1,11 @@
 using FactoryPulse.Application.Interfaces;
+using FactoryPulse.Infrastructure.Identity;
 using FactoryPulse.Infrastructure.Persistence;
 using FactoryPulse.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using FactoryPulse.Infrastructure.Identity;
 
 namespace FactoryPulse.Infrastructure.Extensions;
 
@@ -18,6 +19,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMachineRepository, MachineRepository>();
         services.AddScoped<IProductionOrderRepository, ProductionOrderRepository>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<FactoryPulseDbContext>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
