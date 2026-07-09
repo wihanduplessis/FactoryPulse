@@ -4,6 +4,7 @@ using FactoryPulse.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using FactoryPulse.Infrastructure.Identity;
 
 namespace FactoryPulse.Infrastructure.Extensions;
 
@@ -16,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<FactoryPulseDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IMachineRepository, MachineRepository>();
         services.AddScoped<IProductionOrderRepository, ProductionOrderRepository>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
     }
