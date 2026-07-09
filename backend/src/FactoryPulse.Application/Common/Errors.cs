@@ -17,4 +17,11 @@ public static class Errors
         public static readonly Error InvalidTransition = Error.Conflict("ProductionOrder.InvalidTransition", "The requested status change is not allowed for this order.");
         public static readonly Error EndDateBeforeStart = Error.Validation("ProductionOrder.EndDateBeforeStart", "The end date cannot be before the start date.");
     }
+
+    public static class Auth
+    {
+        public static readonly Error InvalidCredentials = Error.Unauthorized("Auth.InvalidCredentials", "Invalid email or password.");
+        public static readonly Error EmailAlreadyExists = Error.Conflict("Auth.EmailAlreadyExists", "A user with this email already exists.");
+        public static readonly Error InvalidRole = Error.Validation("Auth.InvalidRole", "The specified role is not valid.");
+    }
 }

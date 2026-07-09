@@ -23,4 +23,9 @@ public sealed record Error(string Code, string Description, ErrorType Type)
     {
         return new Error(code, description, ErrorType.Conflict);
     }
+
+    public static Error Unauthorized(string code, string description)
+    {
+        return new Error(code, description, ErrorType.Unauthorized);
+    }
 }
