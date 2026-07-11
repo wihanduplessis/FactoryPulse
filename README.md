@@ -23,10 +23,14 @@ rules that govern them.
   - transition endpoints (`start` / `complete` / `cancel`) rather than a mutable status field
   - business rules: unique order numbers, quantity > 0, no orders on retired machines, valid end dates, no restarting cancelled orders
   - **pagination and filtering** (by status, machine, product)
+- **JWT authentication & role-based authorization** — ASP.NET Core Identity, JWT
+  bearer tokens, three roles (`Admin` / `Manager` / `Viewer`) enforced by policies,
+  secure-by-default endpoints.
 - **Consistent error handling** — RFC-standard `ProblemDetails`, correct status
-  codes (400 / 404 / 409 / 500), all validation errors returned at once.
+  codes (400 / 401 / 403 / 404 / 409 / 500), all validation errors returned at once.
 - **Structured logging** — Serilog to console and rolling file.
-- 🔜 JWT authentication & authorization · Docker image · GitHub Actions CI/CD · Azure deployment
+- **Fully containerized** — `docker compose up` runs the API and SQL Server together.
+- 🔜 GitHub Actions CI/CD · Azure deployment
 
 ## Architecture
 
@@ -73,48 +77,71 @@ The decisions that make this more than CRUD:
 | Validation | FluentValidation |
 | Logging | Serilog (console + file) |
 | API docs | OpenAPI + Swagger UI |
+| Auth | ASP.NET Core Identity, JWT bearer, role-based policies |
+| Containers | Docker (multi-stage build), Docker Compose |
 | Testing | xUnit, NSubstitute, Shouldly |
-| Planned | JWT auth, Docker image, GitHub Actions, Azure App Service, Azure SQL, Application Insights |
+| Planned | GitHub Actions, Azure App Service, Azure SQL, Application Insights |
 
-## Getting started
+## Running with Docker (quickstart)
 
-### Prerequisites
+**The whole stack — API + SQL Server — in two commands.** The only prerequisite is
+[Docker Desktop](https://www.docker.com/products/docker-desktop/): the .NET SDK
+builds *inside* the image, and SQL Server runs in a container. You do not need
+.NET, SQL Server, or EF tools installed.
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for local SQL Server)
+```bash
+cd infrastructure/docker
+cp .env.example .env      # then edit .env — it documents the rules for each value
+docker compose up -d --build
+```
+
+Open **http://localhost:8080/swagger** and log in via `POST /api/auth/login` with
+the **email and password you set in `.env`** (`SEED_ADMIN_EMAIL` /
+`SEED_ADMIN_PASSWORD`). The API applies its own migrations and seeds the admin
+user and roles on startup.
+
+Useful commands:
+
+```bash
+docker compose logs -f api    # follow the API logs
+docker compose down           # stop (data is preserved in a volume)
+docker compose down -v        # stop and wipe the database
+```
+
+## Running locally (for development)
+
+Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download) and Docker
+(for SQL Server only).
 
 ### 1. Start SQL Server
 
 ```bash
 cd infrastructure/docker
-cp .env.example .env          # then set a strong MSSQL_SA_PASSWORD in .env
-docker compose up -d
+cp .env.example .env          # set MSSQL_SA_PASSWORD
+docker compose up -d sqlserver
 ```
 
-### 2. Configure the connection string
+### 2. Configure secrets
 
-The API reads the connection string from .NET user-secrets (never committed).
-From `backend/`:
+The API reads secrets from .NET user-secrets (never committed). From `backend/`:
 
 ```bash
 dotnet user-secrets set "ConnectionStrings:FactoryPulseDatabase" \
   "Server=localhost,1433;Database=FactoryPulseDb;User Id=sa;Password=<your .env password>;TrustServerCertificate=True;" \
   --project src/FactoryPulse.API
+
+dotnet user-secrets set "JwtSettings:Key" "<at least 32 characters>" --project src/FactoryPulse.API
+dotnet user-secrets set "SeedAdmin:Password" "<e.g. Admin123!>" --project src/FactoryPulse.API
 ```
 
-### 3. Apply migrations
-
-```bash
-dotnet ef database update --project src/FactoryPulse.Infrastructure --startup-project src/FactoryPulse.API
-```
-
-### 4. Run the API
+### 3. Run the API
 
 ```bash
 dotnet run --project src/FactoryPulse.API
 ```
 
-Open **https://localhost:7135/swagger** to explore the API.
+Migrations are applied and the admin user seeded automatically in Development.
+Open **https://localhost:7135/swagger**.
 
 ### Run the tests
 
