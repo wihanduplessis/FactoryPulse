@@ -11,6 +11,31 @@ services:
     volumes:
       - sql_data:/var/opt/mssql
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  api:
+    build:
+      context: ../../backend
+      dockerfile: docker/Dockerfile.api
+    container_name: factorypulse-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      UseHttpsRedirection: "false"
+      ApplyMigrationsOnStartup: "true"
+      ConnectionStrings__FactoryPulseDatabase: "Server=sqlserver,1433;Database=FactoryPulseDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
+      JwtSettings__Key: "${JWT_KEY}"
+      SeedAdmin__Password: "${SEED_ADMIN_PASSWORD}"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
 
 volumes:
   sql_data:
