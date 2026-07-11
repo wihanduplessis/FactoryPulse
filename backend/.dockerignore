@@ -1,0 +1,15 @@
+# Build artifacts — must never enter the image
+**/bin/
+**/obj/
+
+# IDE / local
+**/.vs/
+**/.vscode/
+*.user
+
+# Serilog output
+**/logs/
+
+# Git
+.git/
+.gitignore
