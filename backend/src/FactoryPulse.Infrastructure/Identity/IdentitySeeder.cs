@@ -53,7 +53,7 @@ public class IdentitySeeder
         {
             return;
         }
-
+        
         var admin = new ApplicationUser
         {
             UserName = adminEmail,
