@@ -14,6 +14,13 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 
+if (string.IsNullOrWhiteSpace(jwtSettings.Key) || jwtSettings.Key.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JwtSettings:Key is missing or shorter than 32 characters. " +
+        "Set it via user-secrets (local) or the JWT_KEY environment variable (container).");
+}
+
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<FactoryPulse.API.OpenApi.BearerSecuritySchemeTransformer>();
