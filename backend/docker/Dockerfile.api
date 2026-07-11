@@ -1,0 +1,33 @@
+# ============================================================
+# Stage 1: build — uses the .NET SDK to compile and publish
+# ============================================================
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy only what `dotnet restore` needs, so this layer caches well.
+# Central Package Management: every version lives in Directory.Packages.props.
+COPY Directory.Packages.props ./
+COPY src/FactoryPulse.Domain/FactoryPulse.Domain.csproj                 src/FactoryPulse.Domain/
+COPY src/FactoryPulse.Application/FactoryPulse.Application.csproj       src/FactoryPulse.Application/
+COPY src/FactoryPulse.Infrastructure/FactoryPulse.Infrastructure.csproj src/FactoryPulse.Infrastructure/
+COPY src/FactoryPulse.API/FactoryPulse.API.csproj                       src/FactoryPulse.API/
+
+RUN dotnet restore src/FactoryPulse.API/FactoryPulse.API.csproj
+
+# Now bring in the actual source and publish.
+COPY src/ src/
+RUN dotnet publish src/FactoryPulse.API/FactoryPulse.API.csproj \
+    --configuration Release \
+    --output /app/publish \
+    --no-restore
+
+# ============================================================
+# Stage 2: runtime — small image, no SDK, no source
+# ============================================================
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "FactoryPulse.API.dll"]
