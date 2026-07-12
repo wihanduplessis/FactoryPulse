@@ -36,6 +36,53 @@ jobs:
 
       - name: Test
         run: dotnet test backend/FactoryPulse.slnx --configuration Release --no-build
+        
+      - name: Install the EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Generate the idempotent migration script
+        env:
+          JwtSettings__Key: design-time-placeholder-key-not-a-real-secret
+          ConnectionStrings__FactoryPulseDatabase: "Server=localhost;Database=design-time;Trusted_Connection=True;"
+        run: |
+          dotnet ef migrations script --idempotent \
+            --project backend/src/FactoryPulse.Infrastructure \
+            --startup-project backend/src/FactoryPulse.API \
+            --output migrations.sql
+
+      - name: Upload the migration script
+        uses: actions/upload-artifact@v4
+        with:
+          name: migrations
+          path: migrations.sql
+
+  migrate:
+    name: Apply database migrations
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download the migration script
+        uses: actions/download-artifact@v4
+        with:
+          name: migrations
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply the migrations to Azure SQL
+        uses: azure/sql-action@v2
+        with:
+          connection-string: 'Server=tcp:${{ vars.AZURE_SQL_SERVER }},1433;Database=${{ vars.AZURE_SQL_DATABASE }};Authentication=Active Directory Default;Encrypt=True;'
+          path: ./migrations.sql
 
   docker:
     name: Build container image

@@ -38,6 +38,7 @@ public class FactoryPulseApiFactory : WebApplicationFactory<Program>, IAsyncLife
         builder.UseSetting("SeedAdmin:Email", AdminEmail);
         builder.UseSetting("SeedAdmin:Password", AdminPassword);
         builder.UseSetting("ApplyMigrationsOnStartup", "true");
+        builder.UseSetting("SeedIdentityOnStartup", "true");      
         builder.UseSetting("UseHttpsRedirection", "false");
     }
 
