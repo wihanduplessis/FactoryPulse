@@ -118,6 +118,11 @@ if (builder.Configuration.GetValue("ApplyMigrationsOnStartup", defaultValue: fal
     var dbContext = scope.ServiceProvider.GetRequiredService<FactoryPulseDbContext>();
     await dbContext.Database.MigrateAsync();
     app.Logger.LogInformation("Database migration complete.");
+}
+
+if (builder.Configuration.GetValue("SeedIdentityOnStartup", defaultValue: false))
+{
+    using var scope = app.Services.CreateScope();
 
     var seeder = scope.ServiceProvider.GetRequiredService<IdentitySeeder>();
     await seeder.SeedAsync();

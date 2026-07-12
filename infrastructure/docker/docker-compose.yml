@@ -30,6 +30,7 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       UseHttpsRedirection: "false"
       ApplyMigrationsOnStartup: "true"
+      SeedIdentityOnStartup: "true"
       ConnectionStrings__FactoryPulseDatabase: "Server=sqlserver,1433;Database=FactoryPulseDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
       JwtSettings__Key: "${JWT_KEY}"
       SeedAdmin__Password: "${SEED_ADMIN_PASSWORD}"
