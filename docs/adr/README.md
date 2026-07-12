@@ -41,6 +41,11 @@ decision, the decision itself, the alternatives weighed, and the consequences
 | [0013](0013-containerize-the-api.md) | Containerize the API (multi-stage build + Compose) | Accepted |
 | [0014](0014-ci-with-github-actions.md) | Continuous integration with GitHub Actions | Accepted |
 | [0015](0015-api-hardening-before-public-exposure.md) | Harden the authentication endpoints before public exposure | Accepted |
+| [0016](0016-infrastructure-as-code-with-bicep.md) | Infrastructure as code with Bicep, and a budget before any of it | Accepted |
+| [0017](0017-container-apps-over-app-service.md) | Azure Container Apps over App Service | Accepted |
+| [0018](0018-passwordless-with-managed-identity.md) | Passwordless by default — managed identity over vaulted credentials | Accepted |
+| [0019](0019-migrations-in-the-pipeline.md) | Migrations applied by the pipeline, not on application startup | Accepted |
+| [0020](0020-deploy-with-oidc-federated-credentials.md) | Authenticate GitHub Actions to Azure with OIDC federated credentials | Accepted |
 
 ## Candidate future ADRs
 

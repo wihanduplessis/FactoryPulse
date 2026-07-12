@@ -26,27 +26,57 @@ overshoot, which is the one that leaves you time to react.
 
 ## Provision
 
-From the repository root:
-
-```bash
-az group create --name rg-factorypulse --location westeurope \
+```powershell
+az group create --name rg-factorypulse --location swedencentral `
   --tags application=factorypulse managedBy=bicep
 
-az deployment group create \
-  --resource-group rg-factorypulse \
-  --template-file infrastructure/azure/main.bicep \
-  --parameters infrastructure/azure/main.parameters.json
+./infrastructure/azure/deploy.ps1
 ```
 
 Deployments are **idempotent**: ARM compares the template to what exists and
 reconciles the difference, so re-running is safe and does not create duplicates.
+
+`deploy.ps1` resolves the operator-specific parameters (your Entra identity, the CI
+service principal) from Azure itself. They are **not** in `main.parameters.json` —
+that file describes the *system*, and anything true only of this subscription or this
+person is an input, kept out of a public repository. Passing them by hand works too,
+but a fresh shell then silently supplies empty strings and the deployment fails deep
+inside ARM; the script exists so that cannot happen.
+
+CI deploys the same template with `imageTag` set to the commit SHA, authenticating
+with [OIDC federated credentials](../../docs/adr/0020-deploy-with-oidc-federated-credentials.md)
+— no stored secret.
 
 ## Layout
 
 | File | Purpose |
 |------|---------|
 | `main.bicep` | Entry point. Parameters, naming, tags; composes the modules. |
-| `main.parameters.json` | Values for a deployment. |
+| `main.parameters.json` | System-level values only. No identities. |
+| `deploy.ps1` | Resolves identities and deploys. |
+| `modules/identity.bicep` | User-assigned managed identity the app runs as. |
+| `modules/registry.bicep` | Container registry (+ `AcrPush` for CI, `AcrPull` for the app). |
+| `modules/keyvault.bicep` | Key vault (+ read for the app, write for the operator). |
+| `modules/database.bicep` | Azure SQL — Entra-only auth, serverless, free tier. |
+| `modules/monitoring.bicep` | Log Analytics + Application Insights. |
+| `modules/containerapp.bicep` | Container Apps environment and the app itself. |
+
+## Regions run out
+
+West Europe refused to create a container registry and North Europe refused to create a
+SQL server — both are old, oversubscribed regions that stop accepting new customers for
+specific services. The environment lives in **Sweden Central**.
+
+**Probe before committing an environment to a region.** A SQL logical server costs
+nothing to create and delete:
+
+```powershell
+az group create --name rg-probe --location <candidate>
+az sql server create --name sql-probe-<something> --resource-group rg-probe --location <candidate> `
+  --enable-ad-only-auth --external-admin-principal-type User `
+  --external-admin-name <your-upn> --external-admin-sid <your-object-id>
+az group delete --name rg-probe --yes --no-wait
+```
 
 ## Naming
 
