@@ -15,7 +15,16 @@ public static class ServiceCollectionExtensions
     {
         var connectionString = configuration.GetConnectionString("FactoryPulseDatabase");
 
-        services.AddDbContext<FactoryPulseDbContext>(options => options.UseSqlServer(connectionString));
+        services.AddDbContext<FactoryPulseDbContext>(options =>
+        {
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 6,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
+            });
+        });
         services.AddScoped<IMachineRepository, MachineRepository>();
         services.AddScoped<IProductionOrderRepository, ProductionOrderRepository>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
