@@ -1,5 +1,7 @@
 # FactoryPulse
 
+[![CI](https://github.com/wihanduplessis/FactoryPulse/actions/workflows/ci.yml/badge.svg)](https://github.com/wihanduplessis/FactoryPulse/actions/workflows/ci.yml)
+
 A cloud-native manufacturing management API built with **.NET 10**, demonstrating
 Clean Architecture, domain-driven tactical patterns, and modern backend
 engineering practices.
@@ -8,9 +10,21 @@ FactoryPulse lets production managers and factory supervisors manage machines an
 production orders — tracking machine state, order lifecycles, and the business
 rules that govern them.
 
-> **Status:** Active development. Machine Management and Production Orders are
-> complete; Authentication, containerization, CI/CD, and Azure deployment are
+> **Status:** Active development. Machine Management, Production Orders,
+> Authentication, containerization, and CI/CD are complete; Azure deployment is
 > next. See the [Roadmap](docs/Roadmap.md).
+
+## Continuous integration
+
+Every push and pull request runs, on GitHub Actions:
+
+```
+restore → build → 40 unit tests → 6 integration tests (real SQL Server) → build container image
+```
+
+Integration tests use **Testcontainers** to start a genuine SQL Server container
+and **`WebApplicationFactory`** to host the API in-process against it — no mocks,
+no in-memory database. `main` is protected: a red build blocks the merge.
 
 ---
 
