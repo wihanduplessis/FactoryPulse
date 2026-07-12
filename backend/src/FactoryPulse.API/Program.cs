@@ -94,3 +94,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+// Exposes the implicit Program class so integration tests can reference it
+// via WebApplicationFactory<Program>.
+public partial class Program
+{
+}
