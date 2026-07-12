@@ -2,6 +2,7 @@ using FactoryPulse.Application.DTOs;
 using FactoryPulse.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FactoryPulse.API.Controllers;
 
@@ -16,6 +17,7 @@ public class AuthController : ApiController
     }
 
     [AllowAnonymous]
+    [EnableRateLimiting("login")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request, CancellationToken cancellationToken)
     {

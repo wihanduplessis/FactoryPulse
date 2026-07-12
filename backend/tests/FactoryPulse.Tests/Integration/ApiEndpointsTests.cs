@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FactoryPulse.Application.DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FactoryPulse.Tests.Integration;
 
@@ -30,6 +31,13 @@ public class ApiEndpointsTests : IClassFixture<FactoryPulseApiFactory>
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", auth!.AccessToken);
 
+        return client;
+    }
+
+    private HttpClient CreateClientFromIp(string ipAddress)
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Forwarded-For", ipAddress);
         return client;
     }
 
@@ -103,7 +111,6 @@ public class ApiEndpointsTests : IClassFixture<FactoryPulseApiFactory>
     {
         var client = await CreateAdminClientAsync();
 
-        // A machine to hang the order on.
         var machineResponse = await client.PostAsJsonAsync("/api/machines", new CreateMachineRequest
         {
             Name = $"M-{Guid.NewGuid():N}"[..18]
@@ -159,5 +166,65 @@ public class ApiEndpointsTests : IClassFixture<FactoryPulseApiFactory>
         var second = await client.PostAsJsonAsync("/api/orders", request);
 
         second.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task Login_WithRepeatedBadPasswords_LocksTheAccount()
+    {
+        var admin = await CreateAdminClientAsync();
+        var email = $"lockout-{Guid.NewGuid():N}@integration.test";
+
+        var register = await admin.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = email,
+            Password = "Passw0rd!",
+            FullName = "Lockout Test",
+            Role = "Viewer"
+        });
+        register.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        var client = CreateClientFromIp("203.0.113.20");
+
+        for (var attempt = 0; attempt < 5; attempt++)
+        {
+            var bad = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest
+            {
+                Email = email,
+                Password = "definitely-not-the-password"
+            });
+
+            bad.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        }
+
+        var afterLockout = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest
+        {
+            Email = email,
+            Password = "Passw0rd!"
+        });
+
+        afterLockout.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+
+        var problem = await afterLockout.Content.ReadFromJsonAsync<ProblemDetails>();
+        problem!.Title.ShouldBe("Auth.AccountLocked");
+    }
+
+    [Fact]
+    public async Task Login_WhenFlooded_ReturnsTooManyRequests()
+    {
+        var client = CreateClientFromIp("203.0.113.10");
+
+        var request = new LoginRequest
+        {
+            Email = "nobody@integration.test",
+            Password = "definitely-not-the-password"
+        };
+
+        var attempts = Enumerable.Range(0, 30)
+            .Select(_ => client.PostAsJsonAsync("/api/auth/login", request))
+            .ToList();
+
+        var responses = await Task.WhenAll(attempts);
+
+        responses.ShouldContain(response => response.StatusCode == HttpStatusCode.TooManyRequests);
     }
 }

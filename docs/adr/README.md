@@ -40,6 +40,7 @@ decision, the decision itself, the alternatives weighed, and the consequences
 | [0012](0012-auth-in-infrastructure-with-result.md) | Keep auth in Infrastructure, surface through `Result` | Accepted |
 | [0013](0013-containerize-the-api.md) | Containerize the API (multi-stage build + Compose) | Accepted |
 | [0014](0014-ci-with-github-actions.md) | Continuous integration with GitHub Actions | Accepted |
+| [0015](0015-api-hardening-before-public-exposure.md) | Harden the authentication endpoints before public exposure | Accepted |
 
 ## Candidate future ADRs
 

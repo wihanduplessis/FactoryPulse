@@ -19,7 +19,16 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMachineRepository, MachineRepository>();
         services.AddScoped<IProductionOrderRepository, ProductionOrderRepository>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-        services.AddIdentityCore<ApplicationUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<FactoryPulseDbContext>();
+
+        services.AddIdentityCore<ApplicationUser>(options =>
+        {
+            options.Lockout.MaxFailedAccessAttempts = 5;
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.AllowedForNewUsers = true;
+        })
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<FactoryPulseDbContext>();
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IdentitySeeder>();
 
