@@ -58,3 +58,22 @@ jobs:
           tags: factorypulse-api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  azure-auth:
+    name: Verify Azure authentication
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Show the signed-in identity
+        run: az account show --output table
