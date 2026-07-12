@@ -28,7 +28,7 @@ Merging a pull request to `main` runs, unattended:
 52 tests  →  build image  →  push to ACR  →  migrate Azure SQL  →  deploy  →  live
 ```
 
-![CI/CD pipeline](docs/images/ci-pipeline.png)
+![CI/CD pipeline](docs/images/ci.png)
 
 **There is no secret anywhere in that chain.**
 
@@ -67,6 +67,10 @@ See [ADR-0018](docs/adr/0018-passwordless-with-managed-identity.md) and
   into Application Insights.
 
 ![Authenticated login](docs/images/login.png)
+
+...and an authenticated read, straight out of Azure SQL:
+
+![Authenticated request](docs/images/get-machines.png)
 
 ---
 
