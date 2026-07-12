@@ -15,6 +15,9 @@ param administratorObjectId string
 @description('User principal name of the human administrator (you).')
 param administratorLogin string
 
+@description('Container image tag to deploy. CI passes the commit SHA; a manual deploy uses latest.')
+param imageTag string = 'latest'
+
 @description('Deployment environment, used in resource names and tags.')
 @allowed([
   'dev'
@@ -85,10 +88,47 @@ module database 'modules/database.bicep' = {
   }
 }
 
+var workspaceName = 'log-${applicationName}'
+var appInsightsName = 'appi-${applicationName}'
+var managedEnvironmentName = 'cae-${applicationName}'
+var containerAppName = 'ca-${applicationName}'
+
+var sqlConnectionString = 'Server=tcp:${database.outputs.fullyQualifiedDomainName},1433;Database=${database.outputs.databaseName};Authentication=Active Directory Default;Encrypt=True;'
+
+module monitoring 'modules/monitoring.bicep' = {
+  name: 'monitoring'
+  params: {
+    location: location
+    tags: tags
+    workspaceName: workspaceName
+    appInsightsName: appInsightsName
+  }
+}
+
+module containerApp 'modules/containerapp.bicep' = {
+  name: 'containerapp'
+  params: {
+    location: location
+    tags: tags
+    managedEnvironmentName: managedEnvironmentName
+    containerAppName: containerAppName
+    workspaceName: monitoring.outputs.workspaceName
+    identityId: identity.outputs.id
+    identityClientId: identity.outputs.clientId
+    registryLoginServer: registry.outputs.loginServer
+    imageTag: imageTag
+    keyVaultUri: keyVault.outputs.vaultUri
+    appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
+    sqlConnectionString: sqlConnectionString
+    buildSha: imageTag
+  }
+}
+
+output apiUrl string = 'https://${containerApp.outputs.fqdn}'
 
 output sqlServerFqdn string = database.outputs.fullyQualifiedDomainName
 output sqlDatabaseName string = database.outputs.databaseName
-output sqlConnectionString string = 'Server=tcp:${database.outputs.fullyQualifiedDomainName},1433;Database=${database.outputs.databaseName};Authentication=Active Directory Default;Encrypt=True;'
+output sqlConnectionString string = sqlConnectionString
 
 output managedIdentityName string = identity.outputs.name
 output managedIdentityClientId string = identity.outputs.clientId

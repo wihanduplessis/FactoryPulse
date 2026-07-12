@@ -13,8 +13,17 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.HttpOverrides;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var keyVaultUri = builder.Configuration["KeyVaultUri"];
+
+if (!string.IsNullOrWhiteSpace(keyVaultUri))
+{
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+}
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 
 if (string.IsNullOrWhiteSpace(jwtSettings.Key) || jwtSettings.Key.Length < 32)
@@ -38,10 +47,20 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
 builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
     .ReadFrom.Configuration(builder.Configuration)
     .ReadFrom.Services(services)
-    .Enrich.FromLogContext());
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithProperty("Version", builder.Configuration.GetValue("BuildSha", defaultValue: "local")));
+
+if (!string.IsNullOrWhiteSpace(builder.Configuration["ApplicationInsights:ConnectionString"]))
+{
+    builder.Services.AddApplicationInsightsTelemetry();
+}
+
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("CanWrite", policy => policy.RequireRole("Manager", "Admin"))
     .AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
@@ -132,7 +151,7 @@ if (builder.Configuration.GetValue("SeedIdentityOnStartup", defaultValue: false)
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
 
-if (app.Environment.IsDevelopment())
+if (builder.Configuration.GetValue("EnableSwagger", defaultValue: app.Environment.IsDevelopment()))
 {
     app.MapOpenApi();
     app.UseSwaggerUI(options =>
