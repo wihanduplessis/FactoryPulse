@@ -63,11 +63,25 @@ public class AuthService : IAuthService
             return Result.Failure<AuthResponse>(Errors.Auth.InvalidCredentials);
         }
 
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            return Result.Failure<AuthResponse>(Errors.Auth.AccountLocked);
+        }
+
         var passwordValid = await _userManager.CheckPasswordAsync(user, request.Password);
         if (!passwordValid)
         {
+            await _userManager.AccessFailedAsync(user);
+
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return Result.Failure<AuthResponse>(Errors.Auth.AccountLocked);
+            }
+
             return Result.Failure<AuthResponse>(Errors.Auth.InvalidCredentials);
         }
+
+        await _userManager.ResetAccessFailedCountAsync(user);
 
         return await BuildAuthResponseAsync(user);
     }

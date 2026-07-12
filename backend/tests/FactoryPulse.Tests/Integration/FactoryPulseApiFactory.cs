@@ -27,6 +27,9 @@ public class FactoryPulseApiFactory : WebApplicationFactory<Program>, IAsyncLife
 
         builder.UseEnvironment("Development");
 
+        builder.UseSetting("UseForwardedHeaders", "true");
+        builder.UseSetting("RateLimiting:Login:PermitLimit", "20");
+        builder.UseSetting("RateLimiting:Login:WindowSeconds", "1");
         builder.UseSetting("ConnectionStrings:FactoryPulseDatabase", connectionString);
         builder.UseSetting("JwtSettings:Issuer", "FactoryPulse");
         builder.UseSetting("JwtSettings:Audience", "FactoryPulseClients");

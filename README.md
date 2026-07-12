@@ -40,8 +40,11 @@ no in-memory database. `main` is protected: a red build blocks the merge.
 - **JWT authentication & role-based authorization** — ASP.NET Core Identity, JWT
   bearer tokens, three roles (`Admin` / `Manager` / `Viewer`) enforced by policies,
   secure-by-default endpoints.
+- **Hardened auth endpoints** — per-account lockout after repeated failures, and
+  per-IP rate limiting on `login` (429 with `ProblemDetails`), so the public API
+  cannot be brute-forced.
 - **Consistent error handling** — RFC-standard `ProblemDetails`, correct status
-  codes (400 / 401 / 403 / 404 / 409 / 500), all validation errors returned at once.
+  codes (400 / 401 / 403 / 404 / 409 / 429 / 500), all validation errors returned at once.
 - **Structured logging** — Serilog to console and rolling file.
 - **Fully containerized** — `docker compose up` runs the API and SQL Server together.
 - 🔜 GitHub Actions CI/CD · Azure deployment

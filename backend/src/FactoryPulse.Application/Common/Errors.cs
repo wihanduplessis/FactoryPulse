@@ -23,5 +23,6 @@ public static class Errors
         public static readonly Error InvalidCredentials = Error.Unauthorized("Auth.InvalidCredentials", "Invalid email or password.");
         public static readonly Error EmailAlreadyExists = Error.Conflict("Auth.EmailAlreadyExists", "A user with this email already exists.");
         public static readonly Error InvalidRole = Error.Validation("Auth.InvalidRole", "The specified role is not valid.");
+        public static readonly Error AccountLocked = Error.Unauthorized("Auth.AccountLocked", "The account is locked due to too many failed sign-in attempts. Try again later.");
     }
 }

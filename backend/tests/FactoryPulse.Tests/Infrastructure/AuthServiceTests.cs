@@ -118,4 +118,61 @@ public class AuthServiceTests
         result.Value.AccessToken.ShouldBe("token-abc");
         result.Value.Roles.ShouldContain("Admin");
     }
+
+    [Fact]
+    public async Task LoginAsync_WhenAccountIsLockedOut_ReturnsAccountLockedWithoutCheckingThePassword()
+    {
+        var user = new ApplicationUser { Email = "user@test.com" };
+        _userManager.FindByEmailAsync("user@test.com").Returns(user);
+        _userManager.IsLockedOutAsync(user).Returns(true);
+
+        var result = await CreateService().LoginAsync(new LoginRequest { Email = "user@test.com", Password = "Passw0rd!" });
+
+        result.FirstError.ShouldBe(Errors.Auth.AccountLocked);
+        await _userManager.DidNotReceive().CheckPasswordAsync(Arg.Any<ApplicationUser>(), Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenPasswordInvalid_RecordsTheFailedAttempt()
+    {
+        var user = new ApplicationUser { Email = "user@test.com" };
+        _userManager.FindByEmailAsync("user@test.com").Returns(user);
+        _userManager.IsLockedOutAsync(user).Returns(false);
+        _userManager.CheckPasswordAsync(user, "wrong").Returns(false);
+
+        var result = await CreateService().LoginAsync(new LoginRequest { Email = "user@test.com", Password = "wrong" });
+
+        result.FirstError.ShouldBe(Errors.Auth.InvalidCredentials);
+        await _userManager.Received(1).AccessFailedAsync(user);
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenTheFailedAttemptTripsTheLockout_ReturnsAccountLocked()
+    {
+        var user = new ApplicationUser { Email = "user@test.com" };
+        _userManager.FindByEmailAsync("user@test.com").Returns(user);
+        _userManager.IsLockedOutAsync(user).Returns(false, true);
+        _userManager.CheckPasswordAsync(user, "wrong").Returns(false);
+
+        var result = await CreateService().LoginAsync(new LoginRequest { Email = "user@test.com", Password = "wrong" });
+
+        result.FirstError.ShouldBe(Errors.Auth.AccountLocked);
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenValid_ResetsTheFailedAttemptCount()
+    {
+        var user = new ApplicationUser { Email = "user@test.com" };
+        _userManager.FindByEmailAsync("user@test.com").Returns(user);
+        _userManager.IsLockedOutAsync(user).Returns(false);
+        _userManager.CheckPasswordAsync(user, "Passw0rd!").Returns(true);
+        _userManager.GetRolesAsync(user).Returns(new List<string> { "Admin" });
+        _tokenGenerator.GenerateAccessToken(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IEnumerable<string>>())
+            .Returns(new AccessToken("token-abc", DateTime.UtcNow.AddMinutes(30)));
+
+        var result = await CreateService().LoginAsync(new LoginRequest { Email = "user@test.com", Password = "Passw0rd!" });
+
+        result.IsSuccess.ShouldBeTrue();
+        await _userManager.Received(1).ResetAccessFailedCountAsync(user);
+    }
 }
