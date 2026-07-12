@@ -97,3 +97,21 @@ no image changes. Revisit only if a service ever depends on the API's readiness.
 - CI/CD (v0.6): build and push this image; run tests; explicit migration step.
 - Azure (v0.7): container registry, App Service, Key Vault, `/api/health` as the
   platform probe.
+
+## Amendment — 2026-07-12 (v0.7)
+
+Both follow-ups are delivered, and two of the trade-offs above are resolved:
+
+- **Migrate-on-startup is gone in Azure.** The build job generates an idempotent SQL
+  script and the deploy job applies it before the new image is rolled out. The
+  `ApplyMigrationsOnStartup` flag introduced here turned out to be exactly the seam
+  required — no code change, just configuration. Seeding was split into a second flag
+  (`SeedIdentityOnStartup`), because seeding is DML and the application is still
+  permitted to do it. See [ADR-0019](0019-migrations-in-the-pipeline.md).
+- **The `sa` account and the shared JWT key are gone in Azure.** The database uses Entra
+  authentication and has no password at all; the JWT signing key and seed admin password
+  live in Key Vault and are read by a managed identity. See
+  [ADR-0018](0018-passwordless-with-managed-identity.md). Both remain in local Docker,
+  where Entra authentication is unavailable — the *code* is identical either way.
+- **The compute is Container Apps, not App Service** as anticipated here. See
+  [ADR-0017](0017-container-apps-over-app-service.md).
