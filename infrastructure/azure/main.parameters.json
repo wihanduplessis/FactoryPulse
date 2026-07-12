@@ -7,6 +7,9 @@
     },
     "environmentName": {
       "value": "prod"
+    },
+    "githubPrincipalId": {
+      "value": "2fce3f25-1f68-4fc1-9586-6f87011eac6a"
     }
   }
 }

@@ -6,6 +6,9 @@ param location string = resourceGroup().location
 @maxLength(12)
 param applicationName string = 'factorypulse'
 
+@description('Object ID of the GitHub Actions service principal that pushes images.')
+param githubPrincipalId string
+
 @description('Deployment environment, used in resource names and tags.')
 @allowed([
   'dev'
@@ -24,6 +27,21 @@ var tags = {
   environment: environmentName
   managedBy: 'bicep'
 }
+
+var registryName = 'cr${applicationName}${resourceToken}'
+
+module registry 'modules/registry.bicep' = {
+  name: 'registry'
+  params: {
+    location: location
+    tags: tags
+    registryName: registryName
+    pushPrincipalId: githubPrincipalId
+  }
+}
+
+output containerRegistryLoginServer string = registry.outputs.loginServer
+output containerRegistryName string = registry.outputs.registryName
 
 output location string = location
 output resourceToken string = resourceToken
