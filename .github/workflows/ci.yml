@@ -78,6 +78,30 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Write a wake-up query
+        run: echo "SELECT 1;" > wake.sql
+
+      - name: Trigger the resume
+        continue-on-error: true
+        uses: azure/sql-action@v2
+        with:
+          connection-string: 'Server=tcp:${{ vars.AZURE_SQL_SERVER }},1433;Database=${{ vars.AZURE_SQL_DATABASE }};Authentication=Active Directory Default;Encrypt=True;'
+          path: ./wake.sql
+
+      - name: Wait for the database to come online
+        run: |
+          for attempt in {1..10}; do
+            status=$(az sql db show \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --server ${{ vars.AZURE_SQL_SERVER_NAME }} \
+              --name ${{ vars.AZURE_SQL_DATABASE }} \
+              --query status -o tsv)
+            echo "Attempt $attempt: database is $status"
+            if [ "$status" = "Online" ]; then exit 0; fi
+            sleep 15
+          done
+          echo "Database did not come online in time." && exit 1
+
       - name: Apply the migrations to Azure SQL
         uses: azure/sql-action@v2
         with:
